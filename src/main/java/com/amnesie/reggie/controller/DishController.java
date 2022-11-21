@@ -12,10 +12,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +37,9 @@ public class DishController {
 
     @Resource
     private DishFlavorService dishFlavorService;
+
+    @Resource
+    private RedisTemplate redisTemplate;
 
     /**
      * 新增菜品
@@ -111,6 +116,8 @@ public class DishController {
     public R<String> update(@RequestBody DishDto dishDto){
         log.info(dishDto.toString());
         dishService.updateDishAndFlavor(dishDto);
+        //清除Redis中的缓存
+        redisTemplate.delete("dish_" + dishDto.getCategoryId() + "_" +dishDto.getStatus());
         return R.success("保存成功");
     }
 
@@ -140,6 +147,18 @@ public class DishController {
      */
     @GetMapping("/list")
     public R<List<DishDto>> list(Dish dish){
+        List<DishDto> dtoList = null;
+        //构造key: dish_CategoryId_Status
+        String key = "dish_"+dish.getCategoryId()+"_"+dish.getStatus();
+        //从redis中获取菜品数据
+        dtoList = (List<DishDto>) redisTemplate.opsForValue().get(key);
+        //获取成功，直接返回
+        if (dtoList != null){
+            log.info("Redis查询");
+            return R.success(dtoList);
+
+        }
+        //获取为空，执行数据库查询，并将查询结果缓存到Redis
         //条件构造器
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         //添加条件
@@ -150,7 +169,7 @@ public class DishController {
         //执行查询
         List<Dish> list = dishService.list(queryWrapper);
 
-        List<DishDto> dtoList = list.stream().map((item) -> {
+        dtoList = list.stream().map((item) -> {
             DishDto dishDto = new DishDto();
             BeanUtils.copyProperties(item, dishDto);
             Long categoryId = item.getCategoryId();//分类id
@@ -168,7 +187,9 @@ public class DishController {
             dishDto.setFlavors(flavorList);
             return dishDto;
         }).collect(Collectors.toList());
-
+        //将查询结果缓存到Redis中
+        redisTemplate.opsForValue().set(key, dtoList, 60, TimeUnit.MINUTES);
+        log.info("数据库查询");
         return R.success(dtoList);
     }
 }
