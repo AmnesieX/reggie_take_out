@@ -18,7 +18,7 @@ public class RedisConfig extends JCacheConfigurerSupport {
     public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory connection) {
         RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<Object, Object>();
         //默认的key序列化器为： JdkSerializationRedisSerializer
-        redisTemplate.setDefaultSerializer(new StringRedisSerializer());
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setConnectionFactory(connection);
         return redisTemplate;
     }
