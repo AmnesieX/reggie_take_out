@@ -50,6 +50,8 @@ public class DishController {
     public R<String> save(@RequestBody DishDto dishDto){
         log.info(dishDto.toString());
         dishService.saveDishAndFlavor(dishDto);
+        //清除Redis中的缓存
+        redisTemplate.delete("dish_" + dishDto.getCategoryId() + "_" +dishDto.getStatus());
         return R.success("保存成功");
     }
 
