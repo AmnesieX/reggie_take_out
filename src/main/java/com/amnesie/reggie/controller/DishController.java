@@ -12,6 +12,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -35,6 +37,9 @@ public class DishController {
 
     @Resource
     private DishFlavorService dishFlavorService;
+
+    @Resource
+    private CacheManager cacheManager;
 
     /**
      * 新增菜品
@@ -138,6 +143,7 @@ public class DishController {
      * @param dish
      * @return
      */
+    @CachePut(value = "dish", key = "#result.data")
     @GetMapping("/list")
     public R<List<DishDto>> list(Dish dish){
         //条件构造器
