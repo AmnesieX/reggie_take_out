@@ -66,8 +66,9 @@ public class EmployeeController {
             log.info("当前访问用户IP地址为：{}", remoteHost);
             //获取cookie
             Cookie[] cookies = request.getCookies();
-            log.info("输出用户cookies:{}", cookies.toString());
-
+            if (cookies != null) {
+                log.info("输出用户cookies:{}", cookies.toString());
+            }
             return R.success(emp);
         }
 

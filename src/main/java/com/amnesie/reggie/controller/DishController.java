@@ -43,6 +43,7 @@ public class DishController {
      */
     @PostMapping
     public R<String> save(@RequestBody DishDto dishDto){
+
         log.info(dishDto.toString());
         dishService.saveDishAndFlavor(dishDto);
         return R.success("保存成功");
