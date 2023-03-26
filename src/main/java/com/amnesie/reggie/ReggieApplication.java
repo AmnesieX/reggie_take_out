@@ -23,5 +23,3 @@ public class ReggieApplication {
         log.info("滴滴滴...");
     }
 }
-//test add
-//rest

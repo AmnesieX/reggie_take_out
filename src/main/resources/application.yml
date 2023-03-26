@@ -23,4 +23,4 @@ mybatis-plus:
       id-type: ASSIGN_ID
 
 reggie:
-  img-path: D:\idea Project\MavenProject\reggie_take_out\src\main\resources\Images\
+  img-path: D:\idea Project\Old\MavenProject\reggie_take_out\src\main\resources\Images\
